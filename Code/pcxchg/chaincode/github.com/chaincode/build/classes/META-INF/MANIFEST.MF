@@ -1,0 +1,24 @@
+Manifest-Version: 1.0
+Built-By: gigme
+Class-Path: libs/fabric-chaincode-shim-1.4.3.jar libs/commons-cli-1.4.
+ jar libs/commons-logging-1.2.jar libs/fabric-chaincode-protos-1.4.3.j
+ ar libs/protobuf-java-3.5.1.jar libs/protobuf-java-util-3.5.1.jar lib
+ s/gson-2.7.jar libs/grpc-netty-1.9.0.jar libs/grpc-core-1.9.0.jar lib
+ s/grpc-context-1.9.0.jar libs/error_prone_annotations-2.1.2.jar libs/
+ jsr305-3.0.0.jar libs/instrumentation-api-0.4.3.jar libs/opencensus-a
+ pi-0.10.0.jar libs/opencensus-contrib-grpc-metrics-0.10.0.jar libs/ne
+ tty-codec-http2-4.1.17.Final.jar libs/netty-codec-http-4.1.17.Final.j
+ ar libs/netty-codec-4.1.17.Final.jar libs/netty-handler-4.1.17.Final.
+ jar libs/netty-buffer-4.1.17.Final.jar libs/netty-common-4.1.17.Final
+ .jar libs/netty-handler-proxy-4.1.17.Final.jar libs/netty-transport-4
+ .1.17.Final.jar libs/netty-resolver-4.1.17.Final.jar libs/netty-codec
+ -socks-4.1.17.Final.jar libs/grpc-protobuf-1.9.0.jar libs/proto-googl
+ e-common-protos-1.0.0.jar libs/grpc-protobuf-lite-1.9.0.jar libs/grpc
+ -stub-1.9.0.jar libs/netty-tcnative-boringssl-static-2.0.7.Final.jar 
+ libs/bcpkix-jdk15on-1.60.jar libs/bcprov-jdk15on-1.60.jar libs/reflec
+ tions-0.9.11.jar libs/guava-20.0.jar libs/javassist-3.21.0-GA.jar lib
+ s/swagger-annotations-2.0.0.jar libs/json-20180813.jar
+Build-Jdk: 1.8.0_191
+Created-By: Maven Integration for Eclipse
+Main-Class: example.Example
+

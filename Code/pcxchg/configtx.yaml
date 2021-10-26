@@ -1,0 +1,111 @@
+Organizations:
+
+    - &OrdererOrg
+        Name: OrdererMSP
+        ID: OrdererMSP
+
+        MSPDir: crypto-config/ordererOrganizations/pcxchg.com/msp
+
+    - &Asus
+        Name: AsusMSP
+        ID: AsusMSP
+
+        MSPDir: crypto-config/peerOrganizations/Asus.com/msp
+           
+    - &Amazon
+        Name: AmazonMSP
+        ID: AmazonMSP
+
+        MSPDir: crypto-config/peerOrganizations/Amazon.com/msp
+
+            
+    - &Dell
+        Name: DellMSP
+        ID: DellMSP
+
+        MSPDir: crypto-config/peerOrganizations/Dell.com/msp
+
+
+    - &HP
+        Name: HPMSP
+        ID: HPMSP
+
+        MSPDir: crypto-config/peerOrganizations/HP.com/msp
+
+
+Capabilities:
+    Channel: &ChannelCapabilities
+        V1_3: true
+        V1_2: false
+        V1_1: false
+    Orderer: &OrdererCapabilities
+        V1_1: true
+    Application: &ApplicationCapabilities
+        V1_3: true
+        V1_2: false
+        V1_1: false
+
+
+Application: &ApplicationDefaults
+    Organizations:
+        
+    Capabilities:
+        <<: *ApplicationCapabilities
+
+Orderer: &OrdererDefaults
+    OrdererType: kafka
+    Kafka:
+        Brokers:
+            - kafka0:9092
+            - kafka1:9092
+            - kafka2:9092
+            - kafka3:9092
+    Addresses:
+        - orderer.pcxchg.com:7050
+
+    BatchTimeout: 2s
+    BatchSize:
+        MaxMessageCount: 28
+        AbsoluteMaxBytes: 99 MB
+        PreferredMaxBytes: 512 KB
+    Organizations:
+        - *Dell
+        - *HP
+        - *Amazon
+    Policies:
+
+
+Channel: &ChannelDefaults
+    Capabilities:
+        <<: *ChannelCapabilities
+
+Profiles:
+    PCXCHGOrdererGenesis:
+        <<: *ChannelDefaults
+        Orderer:
+            <<: *OrdererDefaults
+            Organizations:
+                - *OrdererOrg
+            Capabilities:
+                <<: *OrdererCapabilities
+        Consortiums:
+            PCXCHG:
+                Organizations:
+                    - *Asus
+                    - *Dell
+                    - *HP
+                    - *Amazon
+    asuschannel:
+        Consortium: PCXCHG
+        <<: *ChannelDefaults
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *Asus
+                - *Dell
+                - *HP
+                - *Amazon
+            Capabilities:
+                <<: *ApplicationCapabilities
+    
+

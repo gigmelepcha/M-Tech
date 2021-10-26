@@ -1,0 +1,334 @@
+version: '2'
+
+networks:
+  pcxchg:
+
+services:
+
+       
+    zookeeper0:    
+        image: hyperledger/fabric-zookeeper
+        container_name: zookeeper0
+        environment:
+            - ZOO_MY_ID=1
+            - ZOO_SERVERS=server.1=zookeeper0:2888:3888 server.2=zookeeper1:2888:3888 server.3=zookeeper2:2888:3888
+        networks:
+            pcxchg:
+        ports:
+            - 2181
+            - 2888
+            - 3888
+      
+    zookeeper1:
+        image: hyperledger/fabric-zookeeper
+        container_name: zookeeper1
+        environment:
+            - ZOO_MY_ID=2
+            - ZOO_SERVERS=server.1=zookeeper0:2888:3888 server.2=zookeeper1:2888:3888 server.3=zookeeper2:2888:3888
+        networks:
+            pcxchg:
+        ports:
+            - 2181
+            - 2888
+            - 3888
+             
+    zookeeper2:
+        image: hyperledger/fabric-zookeeper
+        container_name: zookeeper2
+        environment:
+            - ZOO_MY_ID=3
+            - ZOO_SERVERS=server.1=zookeeper0:2888:3888 server.2=zookeeper1:2888:3888 server.3=zookeeper2:2888:3888
+        networks:
+            pcxchg:
+        ports:
+            - 2181
+            - 2888
+            - 3888
+    kafka0:
+        image: hyperledger/fabric-kafka
+        container_name: kafka0
+        environment:
+            - KAFKA_LOG_RETENTION_MS=-1
+            - KAFKA_MESSAGE_MAX_BYTES=103809024
+            - KAFKA_REPLICA_FETCH_MAX_BYTES=103809024
+            - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+            - KAFKA_DEFAULT_REPLICATION_FACTOR= 3
+            - KAFKA_MIN_INSYNC_REPLICAS=2
+            - KAFKA_BROKER_ID=0
+            - KAFKA_ZOOKEEPER_CONNECT=zookeeper0:2181,zookeeper1:2181,zookeeper2:2181
+        depends_on:
+            - zookeeper0
+            - zookeeper1
+            - zookeeper2
+        networks:
+          pcxchg:
+        ports:
+          - 9092
+    kafka1:
+        image: hyperledger/fabric-kafka
+        container_name: kafka1
+        environment:
+            - KAFKA_LOG_RETENTION_MS=-1
+            - KAFKA_MESSAGE_MAX_BYTES=103809024
+            - KAFKA_REPLICA_FETCH_MAX_BYTES=103809024
+            - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+            - KAFKA_DEFAULT_REPLICATION_FACTOR=3
+            - KAFKA_MIN_INSYNC_REPLICAS=2
+            - KAFKA_BROKER_ID=1
+            - KAFKA_ZOOKEEPER_CONNECT=zookeeper0:2181,zookeeper1:2181,zookeeper2:2181
+        depends_on:
+            - zookeeper0
+            - zookeeper1
+            - zookeeper2
+        networks:
+          pcxchg:
+        ports:
+          - 9092
+
+    kafka2:
+        image: hyperledger/fabric-kafka
+        container_name: kafka2
+        environment:
+            - KAFKA_LOG_RETENTION_MS=-1
+            - KAFKA_MESSAGE_MAX_BYTES=103809024
+            - KAFKA_REPLICA_FETCH_MAX_BYTES=103809024
+            - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+            - KAFKA_DEFAULT_REPLICATION_FACTOR=3
+            - KAFKA_MIN_INSYNC_REPLICAS=2
+            - KAFKA_BROKER_ID=2
+            - KAFKA_ZOOKEEPER_CONNECT=zookeeper0:2181,zookeeper1:2181,zookeeper2:2181
+        depends_on:
+            - zookeeper0
+            - zookeeper1
+            - zookeeper2
+        networks:
+          pcxchg:
+        ports:
+          - 9092       
+    kafka3:
+        image: hyperledger/fabric-kafka
+        container_name: kafka3
+        environment:
+            - KAFKA_LOG_RETENTION_MS=-1
+            - KAFKA_MESSAGE_MAX_BYTES=103809024
+            - KAFKA_REPLICA_FETCH_MAX_BYTES=103809024
+            - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+            - KAFKA_DEFAULT_REPLICATION_FACTOR=3
+            - KAFKA_MIN_INSYNC_REPLICAS=2
+            - KAFKA_BROKER_ID=3
+            - KAFKA_ZOOKEEPER_CONNECT=zookeeper0:2181,zookeeper1:2181,zookeeper2:2181
+        depends_on:
+            - zookeeper0
+            - zookeeper1
+            - zookeeper2
+        networks:
+          pcxchg:
+        ports:
+          - 9092
+
+    orderer.pcxchg.com:
+        image: hyperledger/fabric-orderer
+        container_name: orderer.pcxchg.com
+        environment:
+            - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+            - ORDERER_GENERAL_GENESISMETHOD=file
+            - ORDERER_GENERAL_LOGLEVEL=debug
+            - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.pb
+            - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+            - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+            - CONFIGTX_ORDERER_ORDERERTYPE=kafka
+            - CONFIGTX_ORDERER_KAFKA_BROKERS=[kafka0:9092,kafka1:9092,kafka2:9092,kafka3:9092]
+            - ORDERER_KAFKA_RETRY_SHORTINTERVAL=1s
+            - ORDERER_KAFKA_RETRY_SHORTTOTAL=30s
+            - ORDERER_KAFKA_VERBOSE=true
+            
+        volumes:
+            - ./orderer/genesis_block.pb:/var/hyperledger/orderer/orderer.genesis.pb
+            - ./crypto-config/ordererOrganizations/pcxchg.com/orderers/orderer.pcxchg.com/msp:/var/hyperledger/orderer/msp
+        command: orderer
+        working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+       
+        depends_on:
+           - zookeeper0
+           - zookeeper1
+           - zookeeper2
+        networks:
+          pcxchg:
+        ports:
+          - 7050:7050
+
+   
+  
+    peer0.Asus.com:
+        container_name: peer0.Asus.com
+        extends:
+            file: ./peer.yaml
+            service: peer
+        environment:
+            - CORE_PEER_ADDRESSAUTODETECT=true
+            - CORE_LOGGING_LEVEL=DEBUG
+            - CORE_PEER_ID=peer0.Asus.com
+            - CORE_PEER_ADDRESS=peer0.Asus.com:7051
+            - CORE_PEER_LOCALMSPID=AsusMSP
+            - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
+            - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.Asus.com:7051
+        volumes:
+            - ./crypto-config/peerOrganizations/Asus.com/peers/peer0.Asus.com/msp:/etc/hyperledger/msp/peer
+        ports:
+            - 7051:7051
+            - 7053:7053
+        depends_on:
+            - orderer.pcxchg.com
+        networks:
+            - pcxchg 
+    peer0.Dell.com:
+        container_name: peer0.Dell.com
+        extends:
+            file: ./peer.yaml
+            service: peer
+        environment:
+            - CORE_PEER_ADDRESSAUTODETECT=true
+            - CORE_LOGGING_LEVEL=DEBUG
+            - CORE_PEER_ID=peer0.Dell.com
+            - CORE_PEER_ADDRESS=peer0.Dell.com:7051
+            - CORE_PEER_LOCALMSPID=DellMSP
+            - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
+            - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.Dell.com:7051
+        volumes:
+            - ./crypto-config/peerOrganizations/Dell.com/peers/peer0.Dell.com/msp:/etc/hyperledger/msp/peer
+        ports:
+            - 10051:7051
+            - 10053:7053
+        depends_on:
+            - orderer.pcxchg.com
+        networks:
+            - pcxchg
+    peer0.HP.com:
+        container_name: peer0.HP.com
+        extends:
+            file: ./peer.yaml
+            service: peer
+        environment:
+            - CORE_PEER_ADDRESSAUTODETECT=true
+            - CORE_LOGGING_LEVEL=DEBUG
+            - CORE_PEER_ID=peer0.HP.com
+            - CORE_PEER_ADDRESS=peer0.HP.com:7051
+            - CORE_PEER_LOCALMSPID=HPMSP
+            - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
+            - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.HP.com:7051
+        volumes:
+            - ./crypto-config/peerOrganizations/HP.com/peers/peer0.HP.com/msp:/etc/hyperledger/msp/peer
+        ports:
+            - 9051:7051
+            - 9053:7053
+        depends_on:
+            - orderer.pcxchg.com
+        networks:
+            - pcxchg
+
+    peer0.Amazon.com:
+        container_name: peer0.Amazon.com
+        dns_search: .
+        extends:
+            file: ./peer.yaml
+            service: peer
+        environment:
+            - CORE_PEER_ADDRESSAUTODETECT=true
+            - CORE_LOGGING_LEVEL=DEBUG
+            - CORE_PEER_ID=peer0.Amazon.com
+            - CORE_PEER_ADDRESS=peer0.Amazon.com:7051
+            - CORE_PEER_LOCALMSPID=AmazonMSP
+            - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
+            - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.Amazon.com:7051
+            - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+            - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdbAmazon:5984
+        volumes:
+            - ./crypto-config/peerOrganizations/Amazon.com/peers/peer0.Amazon.com/msp:/etc/hyperledger/msp/peer
+        ports:
+            - 8051:7051
+            - 8053:7053
+        depends_on:
+            - orderer.pcxchg.com
+            - couchdbAmazon
+        networks:
+            - pcxchg
+    cli.Asus:
+        extends:
+            file: ./cli.yaml
+            service: cli
+        container_name: cli.Asus
+        environment:
+            
+            - CORE_PEER_ID=cli.Asus.com
+            - CORE_PEER_ADDRESS=peer0.Asus.com:7051
+            - CORE_PEER_LOCALMSPID=AsusMSP
+            - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@Asus.com/msp
+        volumes:
+            - ./crypto-config/peerOrganizations/Asus.com:/etc/hyperledger/msp
+        depends_on:
+            - orderer.pcxchg.com
+            - peer0.Asus.com
+        networks:
+            - pcxchg
+
+    cli.Dell:
+        extends:
+            file: ./cli.yaml
+            service: cli
+        container_name: cli.Dell
+        environment:
+            - CORE_PEER_ID=cli.Dell.com
+            - CORE_PEER_ADDRESS=peer0.Dell.com:7051
+            - CORE_PEER_LOCALMSPID=DellMSP
+            - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@Dell.com/msp
+        volumes:
+            - ./crypto-config/peerOrganizations/Dell.com:/etc/hyperledger/msp
+        depends_on:
+            - orderer.pcxchg.com
+            - peer0.Dell.com
+        networks:
+            - pcxchg
+
+    cli.HP:
+        extends:
+            file: ./cli.yaml
+            service: cli
+        container_name: cli.HP
+        environment:
+            - CORE_PEER_ID=cli.HP.com
+            - CORE_PEER_ADDRESS=peer0.HP.com:7051
+            - CORE_PEER_LOCALMSPID=HPMSP
+            - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@HP.com/msp
+        volumes:
+            - ./crypto-config/peerOrganizations/HP.com:/etc/hyperledger/msp
+        depends_on:
+            - orderer.pcxchg.com
+            - peer0.HP.com
+        networks:
+            - pcxchg
+
+    cli.Amazon:
+        extends:
+            file: ./cli.yaml
+            service: cli
+        container_name: cli.Amazon
+        environment:
+            - CORE_PEER_ID=cli.Amazon.com
+            - CORE_PEER_ADDRESS=peer0.Amazon.com:7051
+            - CORE_PEER_LOCALMSPID=AmazonMSP
+            - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@Amazon.com/msp
+        volumes:
+            - ./crypto-config/peerOrganizations/Amazon.com:/etc/hyperledger/msp
+        depends_on:
+            - peer0.Amazon.com       
+        networks:
+            - pcxchg
+    couchdbAmazon:
+        container_name: couchdbAmazon
+        image: hyperledger/fabric-couchdb
+        environment:
+            DB_URL: http://localhost:5984/
+        ports:
+            - "5984:5984"
+        networks:
+            - pcxchg

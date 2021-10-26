@@ -1,0 +1,68 @@
+version: '2'
+
+services:
+
+    zookeeper:
+        image: hyperledger/fabric-zookeeper
+        restart: always
+        ports:
+            - 2181
+            - 2888
+            - 3888
+
+    kafka:
+        image: hyperledger/fabric-kafka
+        restart: always
+        environment:
+            - KAFKA_LOG_RETENTION_MS=-1
+
+            - KAFKA_MESSAGE_MAX_BYTES=103809024
+            - KAFKA_REPLICA_FETCH_MAX_BYTES=103809024
+            - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+            - KAFKA_MIN_INSYNC_REPLICAS=2
+        ports:
+            - 9092
+
+ orderer:
+    image: hyperledger/fabric-orderer
+    environment:
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LOGLEVEL=debug
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_KAFKA_RETRY_SHORTINTERVAL=1s
+      - ORDERER_KAFKA_RETRY_SHORTTOTAL=30s
+      - ORDERER_KAFKA_VERBOSE=true
+    volumes:
+      - ./orderer/genesis_block.pb:/var/hyperledger/orderer/orderer.genesis.pb
+      ./crypto-config/ordererOrganizations/pcxchg.com/orderers/orderer.pcxchg.com/msp:/var/hyperledger/orderer/msp
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/orderer
+    command: orderer
+    ports:
+      - '7050'
+     
+            - ORDERER_GENERAL_GENESISMETHOD=file
+            - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.pb
+            - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+            - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+            - CONFIGTX_ORDERER_ORDERERTYPE=kafka
+            - CONFIGTX_ORDERER_KAFKA_BROKERS=[kafka0:9092,kafka1:9092,kafka2:9092,kafka3:9092]
+            - ORDERER_KAFKA_RETRY_SHORTINTERVAL=1s
+            - ORDERER_KAFKA_RETRY_SHORTTOTAL=30s
+            - ORDERER_KAFKA_VERBOSE=true
+            
+        volumes:
+            - ./orderer/genesis_block.pb:/var/hyperledger/orderer/orderer.genesis.pb
+            - ./crypto-config/ordererOrganizations/pcxchg.com/orderers/orderer.pcxchg.com/msp:/var/hyperledger/orderer/msp
+        command: orderer
+        working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+       
+        depends_on:
+            - kafka0
+            - kafka1
+            - kafka2
+            - kafka3
+        networks:
+          pcxchg:
+        ports:
+          - 7050:7050
+   
